@@ -1,7 +1,7 @@
 package com.habibi.modern.controller;
 
 import com.habibi.modern.dto.UserSignUpDto;
-import com.habibi.modern.service.UserService;
+import com.habibi.modern.service.UserServiceProxy;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class UserController {
 
-    private UserService userService;
+    private UserServiceProxy userServiceProxy;
 
     @PostMapping()
     public void signUp(@RequestBody UserSignUpDto userSignUpDto){
-        if(!userService.isValid(userSignUpDto))
+        if(!userServiceProxy.isValid(userSignUpDto))
             return; //todo throw an exception
 
-        userService.signUp(userSignUpDto);
+        userServiceProxy.signUp(userSignUpDto);
     }
 }

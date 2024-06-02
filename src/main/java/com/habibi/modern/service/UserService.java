@@ -20,7 +20,6 @@ public class UserService {
             return;    //throw an exception
 
         UserEntity userEntity = createUser(userSignUpDto);
-
         userRepository.save(userEntity);
     }
 
