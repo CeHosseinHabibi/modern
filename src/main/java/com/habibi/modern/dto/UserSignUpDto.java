@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class UserSignUpDto {
     private String username;
     private String password;
+    private Long accountNumber;
     private UserType userType;
     private String organizationName;
     private ContractType contractType;

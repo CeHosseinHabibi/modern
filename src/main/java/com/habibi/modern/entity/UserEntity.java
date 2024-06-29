@@ -15,7 +15,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class UserEntity {
     @Id
     @GeneratedValue(generator = "user-sequence-generator")
@@ -29,7 +29,10 @@ public class UserEntity {
             }
     )
     private Long id;
+
+    @Column(unique = true, nullable = false)
     private String username;
+    @Column(nullable = false)
     private String password;
     private Date createdAt = new Date();
 }
