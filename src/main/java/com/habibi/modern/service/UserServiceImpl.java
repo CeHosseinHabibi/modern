@@ -20,7 +20,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(userEntity);
     }
 
-    public UserEntity createUser(UserSignUpDto userSignUpDto) {
+    private UserEntity createUser(UserSignUpDto userSignUpDto) {
         UserEntity userEntity = null;
         switch (userSignUpDto.getUserType()) {
             case BANKING:
@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
         return userEntity;
     }
 
-    public ThirdPartyUser createThirdPartyUser(UserSignUpDto userSignUpDto) {
+    private ThirdPartyUser createThirdPartyUser(UserSignUpDto userSignUpDto) {
         return ThirdPartyUser.builder()
                 .organizationName(userSignUpDto.getOrganizationName())
                 .contractType(userSignUpDto.getContractType())
@@ -43,11 +43,11 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-    public BankUser createBankUser() {
+    private BankUser createBankUser() {
         return new BankUser();
     }
 
-    public void validate(UserSignUpDto userSignUpDto) throws SignUpException {
+    private void validate(UserSignUpDto userSignUpDto) throws SignUpException {
         if (userRepository.findUserEntityByUsername(userSignUpDto.getUsername()).isPresent())
             throw new SignUpException("Username is duplicated.");
     }

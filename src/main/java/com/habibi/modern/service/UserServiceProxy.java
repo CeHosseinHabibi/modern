@@ -4,8 +4,6 @@ import com.habibi.modern.client.RestTemplateClient;
 import com.habibi.modern.dto.RollbackWithdrawDto;
 import com.habibi.modern.dto.UserSignUpDto;
 import com.habibi.modern.dto.WithdrawResponseDto;
-import com.habibi.modern.entity.BankUser;
-import com.habibi.modern.entity.ThirdPartyUser;
 import com.habibi.modern.entity.UserEntity;
 import com.habibi.modern.enums.ErrorCode;
 import com.habibi.modern.exceptions.SignUpException;
@@ -27,7 +25,7 @@ public class UserServiceProxy implements UserService {
     private final UserServiceImpl userServiceImpl;
     private static final Logger logger = LogManager.getLogger(UserServiceProxy.class);
 
-    public UserEntity signUp(UserSignUpDto userSignUpDto) throws SignUpWithdrawException {
+    public UserEntity signUp(UserSignUpDto userSignUpDto) throws SignUpException {
         WithdrawResponseDto withdrawResponseDto = null;
         try {
             withdrawResponseDto = restTemplateClient.callWithdraw(userSignUpDto.getAccountNumber());
@@ -45,11 +43,12 @@ public class UserServiceProxy implements UserService {
         } catch (SignUpException signUpException) {
             logger.error(signUpException);
             restTemplateClient.callRollBack(new RollbackWithdrawDto(withdrawResponseDto.getTrackingCode()));
+            throw signUpException;
         } catch (Exception exception) {
             logger.error(exception);
             restTemplateClient.callRollBack(new RollbackWithdrawDto(withdrawResponseDto.getTrackingCode()));
+            throw exception;
         }
-        return null;
 //        1 ->connection refused        =>return connection time out with core
 //        1 ->400                       =>return 400 exception to client
 //        1 ->500                       =>return 500 exception to client
@@ -58,25 +57,4 @@ public class UserServiceProxy implements UserService {
 //        1 ->200, 2 ->500              =>coreClient.rollbackWithdraw(new RollbackWithdrawDto(withdrawResponseDto.getTrackingCode()));
 //        1 ->200, 2 ->200              =>nothing
     }
-
-    @Override
-    public UserEntity createUser(UserSignUpDto userSignUpDto) {
-        return userServiceImpl.createUser(userSignUpDto);
-    }
-
-    @Override
-    public ThirdPartyUser createThirdPartyUser(UserSignUpDto userSignUpDto) {
-        return userServiceImpl.createThirdPartyUser(userSignUpDto);
-    }
-
-    @Override
-    public BankUser createBankUser() {
-        return userServiceImpl.createBankUser();
-    }
-
-    @Override
-    public void validate(UserSignUpDto userSignUpDto) throws SignUpException {
-        userServiceImpl.validate(userSignUpDto);
-    }
-
 }
