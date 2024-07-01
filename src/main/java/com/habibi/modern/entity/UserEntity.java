@@ -1,6 +1,9 @@
 package com.habibi.modern.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,9 +33,21 @@ public class UserEntity {
     )
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
+    @Size(min = 3, max = 40, message = "The username size should be between 3 to 40.")
+    @Pattern(regexp = "^(([a-z]+)|([A-Z]+))+([0-9]*)$", message = "The username must match the pattern.")
     private String username;
-    @Column(nullable = false)
+
+    @Size(min = 3, max = 40, message = "The password size should be between 3 to 40.")
+    @Pattern(regexp = "^([0-9]+)([a-z]+)([A-Z]+)$", message = "The password must match the pattern.")
     private String password;
+
+    @Size(min = 3, max = 60, message = "The first name size should be between 3 to 60.")
+    private String firstName;
+
+    @Size(min = 3, max = 60, message = "The last name size should be between 3 to 60.")
+    private String lastName;
+
+    @NotNull
     private Date createdAt = new Date();
 }
