@@ -32,6 +32,8 @@ public class UserServiceImpl implements UserService {
         }
         userEntity.setUsername(userSignUpDto.getUsername());
         userEntity.setPassword(userSignUpDto.getPassword());
+        userEntity.setFirstName(userSignUpDto.getFirstName());
+        userEntity.setLastName(userSignUpDto.getLastName());
         return userEntity;
     }
 
