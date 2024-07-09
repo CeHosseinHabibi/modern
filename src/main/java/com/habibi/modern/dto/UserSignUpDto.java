@@ -33,6 +33,9 @@ public class UserSignUpDto {
     @NotNull(message = "The user type should be not null.")
     private UserType userType;
 
+    @NotBlank
+    private String nationalCode;
+
     private String organizationName;
     private ContractType contractType;
     private UserRole userRole;

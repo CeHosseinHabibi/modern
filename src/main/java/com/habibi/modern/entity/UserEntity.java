@@ -1,6 +1,7 @@
 package com.habibi.modern.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -50,4 +51,8 @@ public class UserEntity {
 
     @NotNull
     private Date createdAt = new Date();
+
+    @Column(unique = true)
+    @NotBlank
+    private String nationalCode;
 }

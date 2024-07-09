@@ -7,6 +7,7 @@ import com.habibi.modern.entity.UserEntity;
 import com.habibi.modern.exceptions.SignUpException;
 import com.habibi.modern.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +18,15 @@ public class UserServiceImpl implements UserService {
     public UserEntity signUp(UserSignUpDto userSignUpDto) throws SignUpException {
         validate(userSignUpDto);
         UserEntity userEntity = createUser(userSignUpDto);
-        return userRepository.save(userEntity);
+        return saveUser(userEntity);
+    }
+
+    private UserEntity saveUser(UserEntity userEntity) throws SignUpException {
+        try {
+            return userRepository.save(userEntity);
+        } catch (DataIntegrityViolationException exception) {
+            throw new SignUpException(exception.getMessage());
+        }
     }
 
     private UserEntity createUser(UserSignUpDto userSignUpDto) {
@@ -34,6 +43,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setPassword(userSignUpDto.getPassword());
         userEntity.setFirstName(userSignUpDto.getFirstName());
         userEntity.setLastName(userSignUpDto.getLastName());
+        userEntity.setNationalCode(userSignUpDto.getNationalCode());
         return userEntity;
     }
 
@@ -50,6 +60,9 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validate(UserSignUpDto userSignUpDto) throws SignUpException {
+        if (userRepository.findUserEntityByNationalCode(userSignUpDto.getNationalCode()).isPresent())
+            throw new SignUpException("User with the national code has already been registered.");
+
         if (userRepository.findUserEntityByUsername(userSignUpDto.getUsername()).isPresent())
             throw new SignUpException("Username is duplicated.");
     }
