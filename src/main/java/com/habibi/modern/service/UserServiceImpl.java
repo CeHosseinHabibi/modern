@@ -2,20 +2,25 @@ package com.habibi.modern.service;
 
 import com.habibi.modern.dto.UserSignUpDto;
 import com.habibi.modern.entity.BankUser;
+import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.entity.ThirdPartyUser;
 import com.habibi.modern.entity.UserEntity;
+import com.habibi.modern.enums.RequestStatus;
 import com.habibi.modern.exceptions.SignUpException;
 import com.habibi.modern.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
-    public UserEntity signUp(UserSignUpDto userSignUpDto) throws SignUpException {
+    @Transactional(rollbackFor = SignUpException.class)
+    public UserEntity signUp(UserSignUpDto userSignUpDto, SignupRequest signupRequest) throws SignUpException {
+        signupRequest.setRequestStatus(RequestStatus.SIGNUP_DONE);
         validate(userSignUpDto);
         UserEntity userEntity = createUser(userSignUpDto);
         return saveUser(userEntity);
