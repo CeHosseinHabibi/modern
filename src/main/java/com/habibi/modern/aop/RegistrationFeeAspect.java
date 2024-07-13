@@ -42,14 +42,15 @@ public class RegistrationFeeAspect {
             restTemplateClient.callWithdraw(userSignUpDto.getAccountNumber(),
                     Utils.getRequesterDto(signupRequest.getRequesterEntity()));
         } catch (ResourceAccessException resourceAccessException) {
-            signupRequest.setRequestStatus(RequestStatus.TIME_OUT_OR_UNREACHABLE_CORE);
+            signupRequest.setRequestStatus(RequestStatus.CORE_IS_UNREACHABLE);
             signupRequestService.save(signupRequest);
-            throw new SignUpWithdrawException(ErrorCode.TIME_OUT_OR_UNREACHABLE_CORE, "A connection problem with core system");
+            throw new SignUpWithdrawException(ErrorCode.CORE_IS_UNREACHABLE, "A connection problem with core system");
         } catch (HttpClientErrorException httpClientErrorException) {
             WithdrawResponseDto exceptionBody = httpClientErrorException.getResponseBodyAs(WithdrawResponseDto.class);
             throw new SignUpWithdrawException(exceptionBody.getErrorCode(), exceptionBody.getDescription());
         } catch (HttpServerErrorException httpServerErrorException) {
-            throw new SignUpWithdrawException(ErrorCode.CORE_THROWS_500, "Core system -> withdraw returned 500 statues code.");
+            throw new SignUpWithdrawException(ErrorCode.CORE_THROWS_INTERNAL_SERVER_ERROR,
+                    "Core system -> withdraw returned 500 statues code.");
         }
     }
 }

@@ -36,7 +36,7 @@ public class ConflictResolverScheduler {
         Instant scannableTo = now.toInstant().minus(15, TimeUnit.MINUTES.toChronoUnit());
         Instant scannableFrom = scannableTo.minus(3, TimeUnit.DAYS.toChronoUnit());
         List<RequestStatus> potentialConflictsStatuses =
-                List.of(RequestStatus.CREATED, RequestStatus.TIME_OUT_OR_UNREACHABLE_CORE);
+                List.of(RequestStatus.CREATED, RequestStatus.CORE_IS_UNREACHABLE);
 
         List<SignupRequest> potentialConflicts =
                 signupRequestRepository.findAllByRequestStatusInAndRequesterEntity_RequestedAtIsBetween(
@@ -53,17 +53,17 @@ public class ConflictResolverScheduler {
 
                 potentialConflict.setLastRollbackTryDate(new Date());
                 restTemplateClient.callRollBack(rollbackDto);
-                potentialConflict.setRequestStatus(RequestStatus.ROLLBACKED_IN_CORE);
+                potentialConflict.setRequestStatus(RequestStatus.RESOLVED_CONFLICT_BY_ROLLBACKING_ITS_WITHDRAW_TRANSACTION);
             } catch (ResourceAccessException resourceAccessException) {
-                potentialConflict.setLastRollbackTryErrorCode(ErrorCode.TIME_OUT_OR_UNREACHABLE_CORE);
+                potentialConflict.setLastRollbackTryErrorCode(ErrorCode.CORE_IS_UNREACHABLE);
             } catch (HttpClientErrorException httpClientErrorException) {
                 RollBackWithdrawResponseDto exceptionBody =
                         httpClientErrorException.getResponseBodyAs(RollBackWithdrawResponseDto.class);
                 potentialConflict.setLastRollbackTryErrorCode(exceptionBody.getErrorCode());
                 potentialConflict.setLastRollbackTryDescription(exceptionBody.getDescription());
-                potentialConflict.setRequestStatus(RequestStatus.RESOLVED_400_ERROR_CODE_WITH_CORE);
+                potentialConflict.setRequestStatus(RequestStatus.RESOLVED_CONFLICT_CONTAINS_TRANSACTION_HAS_BAD_REQUEST_ERROR);
             } catch (HttpServerErrorException httpServerErrorException) {
-                potentialConflict.setLastRollbackTryErrorCode(ErrorCode.CORE_THROWS_500);
+                potentialConflict.setLastRollbackTryErrorCode(ErrorCode.CORE_THROWS_INTERNAL_SERVER_ERROR);
             } finally {
                 signupRequestRepository.save(potentialConflict);
             }
