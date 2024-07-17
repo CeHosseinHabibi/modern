@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -50,7 +50,7 @@ public class UserEntity {
     private String lastName;
 
     @NotNull
-    private Date createdAt = new Date();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(unique = true)
     @NotBlank
