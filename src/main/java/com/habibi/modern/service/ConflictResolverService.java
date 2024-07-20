@@ -11,7 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Service
 @AllArgsConstructor
@@ -19,7 +19,7 @@ public class ConflictResolverService {
     private final SignupRequestRepository signupRequestRepository;
 
     public SignupRequest saveSignUpRequest(UserSignUpDto userSignUpDto) throws SignUpException {
-        RequesterDto requesterDto = new RequesterDto(new Date(), userSignUpDto.getNationalCode());
+        RequesterDto requesterDto = new RequesterDto(LocalDateTime.now(), userSignUpDto.getNationalCode());
         SignupRequest signupRequest = createSignupRequest(requesterDto);
         return save(signupRequest);
     }

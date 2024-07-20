@@ -18,10 +18,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import java.time.Instant;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableScheduling
@@ -30,17 +28,17 @@ public class ConflictResolverScheduler {
     private SignupRequestRepository signupRequestRepository;
     private RestTemplateClient restTemplateClient;
 
-    @Scheduled(fixedDelay = 2, timeUnit = TimeUnit.HOURS)
+    @Scheduled(cron = "0 15 2 * * ?")
     public void resolveConflicts() {
-        Date now = new Date();
-        Instant scannableTo = now.toInstant().minus(15, TimeUnit.MINUTES.toChronoUnit());
-        Instant scannableFrom = scannableTo.minus(3, TimeUnit.DAYS.toChronoUnit());
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime scannableTo = now.minusMinutes(15);
+        LocalDateTime scannableFrom = scannableTo.minusDays(1);
         List<RequestStatus> potentialConflictsStatuses =
                 List.of(RequestStatus.CREATED, RequestStatus.CORE_IS_UNREACHABLE);
 
         List<SignupRequest> potentialConflicts =
                 signupRequestRepository.findAllByRequestStatusInAndRequesterEntity_RequestedAtIsBetween(
-                        potentialConflictsStatuses, Date.from(scannableFrom), Date.from(scannableTo));
+                        potentialConflictsStatuses, scannableFrom, scannableTo);
 
         if (potentialConflicts.isEmpty())
             return;
@@ -51,7 +49,7 @@ public class ConflictResolverScheduler {
                 RollbackWithdrawDto rollbackDto = new RollbackWithdrawDto(
                         new RequesterDto(requester.getRequestedAt(), requester.getUserNationalCode()));
 
-                potentialConflict.setLastRollbackTryDate(new Date());
+                potentialConflict.setLastRollbackTryDate(LocalDateTime.now());
                 restTemplateClient.callRollBack(rollbackDto);
                 potentialConflict.setRequestStatus(RequestStatus.RESOLVED_CONFLICT_BY_ROLLBACKING_ITS_WITHDRAW_TRANSACTION);
             } catch (ResourceAccessException resourceAccessException) {

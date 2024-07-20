@@ -7,7 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"REQUESTED_AT", "USER_NATIONAL_CODE"}))
@@ -32,7 +32,7 @@ public class SignupRequest {
     private RequestStatus requestStatus;
     private ErrorCode lastRollbackTryErrorCode;
     private String lastRollbackTryDescription;
-    private Date lastRollbackTryDate;
+    private LocalDateTime lastRollbackTryDate;
     @Embedded
     private RequesterEntity requesterEntity;
 }
