@@ -1,5 +1,7 @@
 package com.habibi.modern.controller;
 
+import com.habibi.modern.dto.PaginatedResponse;
+import com.habibi.modern.dto.UserDto;
 import com.habibi.modern.dto.UserSignUpDto;
 import com.habibi.modern.dto.UserSignUpResponseDto;
 import com.habibi.modern.entity.SignupRequest;
@@ -9,6 +11,7 @@ import com.habibi.modern.enums.UserRole;
 import com.habibi.modern.exceptions.SignUpException;
 import com.habibi.modern.service.ConflictResolverService;
 import com.habibi.modern.service.UserService;
+import com.habibi.modern.util.Utils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -35,7 +40,7 @@ public class UserController {
     }
 
     @GetMapping()
-    public Page<UserEntity> search(
+    public ResponseEntity<PaginatedResponse<UserDto>> search(
             @RequestParam(required = false) String username, @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdFrom,
@@ -44,7 +49,12 @@ public class UserController {
             @RequestParam(required = false) ContractType contractType, @RequestParam(required = false) UserRole userRole,
             @RequestParam(required = false) Long cif, @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") String sortBy) {
-        return userService.search(username, firstName, lastName, createdFrom, createdTo, nationalCode,
-                organizationName, contractType, userRole, cif, page, size, sortBy);
+        Page<UserEntity> usersPage = userService.search(username, firstName, lastName, createdFrom, createdTo,
+                nationalCode, organizationName, contractType, userRole, cif, page, size, sortBy);
+        List<UserDto> userDtos = usersPage.stream().map(a -> Utils.toUserDto(a)).collect(Collectors.toList());
+        PaginatedResponse<UserDto> response = new PaginatedResponse<>(userDtos, usersPage.getNumber(),
+                usersPage.getSize(), usersPage.getTotalElements(), usersPage.getTotalPages()
+        );
+        return ResponseEntity.ok(response);
     }
 }

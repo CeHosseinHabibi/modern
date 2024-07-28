@@ -1,22 +1,19 @@
 package com.habibi.modern.configuration;
 
 
-import com.habibi.modern.client.RestTemplateClient;
+import com.habibi.modern.client.ModernRestClient;
 import com.habibi.modern.dto.RequesterDto;
-import com.habibi.modern.dto.RollBackWithdrawResponseDto;
 import com.habibi.modern.dto.RollbackWithdrawDto;
 import com.habibi.modern.entity.RequesterEntity;
 import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.enums.ErrorCode;
 import com.habibi.modern.enums.RequestStatus;
+import com.habibi.modern.exceptions.RollbackWithdrawException;
 import com.habibi.modern.repository.SignupRequestRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ConflictResolverScheduler {
     private SignupRequestRepository signupRequestRepository;
-    private RestTemplateClient restTemplateClient;
+    private ModernRestClient modernRestClient;
 
     @Scheduled(cron = "0 15 2 * * ?")
     public void resolveConflicts() {
@@ -48,20 +45,16 @@ public class ConflictResolverScheduler {
                 RequesterEntity requester = potentialConflict.getRequesterEntity();
                 RollbackWithdrawDto rollbackDto = new RollbackWithdrawDto(
                         new RequesterDto(requester.getRequestedAt(), requester.getUserNationalCode()));
-
                 potentialConflict.setLastRollbackTryDate(LocalDateTime.now());
-                restTemplateClient.callRollBack(rollbackDto);
+                modernRestClient.callRollBack(rollbackDto);
                 potentialConflict.setRequestStatus(RequestStatus.RESOLVED_CONFLICT_BY_ROLLBACKING_ITS_WITHDRAW_TRANSACTION);
-            } catch (ResourceAccessException resourceAccessException) {
-                potentialConflict.setLastRollbackTryErrorCode(ErrorCode.CORE_IS_UNREACHABLE);
-            } catch (HttpClientErrorException httpClientErrorException) {
-                RollBackWithdrawResponseDto exceptionBody =
-                        httpClientErrorException.getResponseBodyAs(RollBackWithdrawResponseDto.class);
-                potentialConflict.setLastRollbackTryErrorCode(exceptionBody.getErrorCode());
-                potentialConflict.setLastRollbackTryDescription(exceptionBody.getDescription());
-                potentialConflict.setRequestStatus(RequestStatus.RESOLVED_CONFLICT_CONTAINS_TRANSACTION_HAS_BAD_REQUEST_ERROR);
-            } catch (HttpServerErrorException httpServerErrorException) {
-                potentialConflict.setLastRollbackTryErrorCode(ErrorCode.CORE_THROWS_INTERNAL_SERVER_ERROR);
+            } catch (RollbackWithdrawException rollbackWithdrawException) {
+                potentialConflict.setLastRollbackTryErrorCode(rollbackWithdrawException.getErrorCode());
+                potentialConflict.setLastRollbackTryDescription(rollbackWithdrawException.getMessage());
+                if (!rollbackWithdrawException.getErrorCode().equals(ErrorCode.CORE_IS_UNREACHABLE) &&
+                        !rollbackWithdrawException.getErrorCode().equals(ErrorCode.CORE_THROWS_INTERNAL_SERVER_ERROR)) {
+                    potentialConflict.setRequestStatus(RequestStatus.RESOLVED_CONFLICT_CONTAINS_TRANSACTION_HAS_BAD_REQUEST_ERROR);
+                }
             } finally {
                 signupRequestRepository.save(potentialConflict);
             }
