@@ -4,7 +4,7 @@ import com.habibi.modern.dto.RequesterDto;
 import com.habibi.modern.dto.UserSignUpDto;
 import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.enums.RequestStatus;
-import com.habibi.modern.exceptions.SignUpException;
+import com.habibi.modern.exceptions.BadRequestException;
 import com.habibi.modern.repository.SignupRequestRepository;
 import com.habibi.modern.util.Utils;
 import lombok.AllArgsConstructor;
@@ -18,17 +18,17 @@ import java.time.LocalDateTime;
 public class ConflictResolverService {
     private final SignupRequestRepository signupRequestRepository;
 
-    public SignupRequest saveSignUpRequest(UserSignUpDto userSignUpDto) throws SignUpException {
+    public SignupRequest saveSignUpRequest(UserSignUpDto userSignUpDto) throws BadRequestException {
         RequesterDto requesterDto = new RequesterDto(LocalDateTime.now(), userSignUpDto.getNationalCode());
         SignupRequest signupRequest = createSignupRequest(requesterDto);
         return save(signupRequest);
     }
 
-    private SignupRequest save(SignupRequest signupRequest) throws SignUpException {
+    private SignupRequest save(SignupRequest signupRequest) throws BadRequestException {
         try {
             return signupRequestRepository.save(signupRequest);
         } catch (DataIntegrityViolationException exception) {
-            throw new SignUpException(exception.getMessage());
+            throw new BadRequestException(exception.getMessage());
         }
     }
 

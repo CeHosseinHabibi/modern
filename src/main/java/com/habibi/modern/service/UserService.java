@@ -5,13 +5,15 @@ import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.entity.UserEntity;
 import com.habibi.modern.enums.ContractType;
 import com.habibi.modern.enums.UserRole;
-import com.habibi.modern.exceptions.SignUpException;
+import com.habibi.modern.exceptions.BadRequestException;
+import com.habibi.modern.exceptions.CoreInvocationException;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 
 public interface UserService {
-    UserEntity signUp(UserSignUpDto userSignUpDto, SignupRequest signupRequest) throws SignUpException;
+    UserEntity signUp(UserSignUpDto userSignUpDto, SignupRequest signupRequest) throws BadRequestException,
+            CoreInvocationException;
 
     Page<UserEntity> search(String username, String firstName, String lastName, LocalDateTime createdFrom,
                             LocalDateTime createdTo, String nationalCode, String organizationName,

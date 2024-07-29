@@ -5,7 +5,7 @@ import com.habibi.modern.dto.UserSignUpDto;
 import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.enums.ErrorCode;
 import com.habibi.modern.enums.RequestStatus;
-import com.habibi.modern.exceptions.SignUpWithdrawException;
+import com.habibi.modern.exceptions.CoreInvocationException;
 import com.habibi.modern.service.SignupRequestService;
 import com.habibi.modern.util.Utils;
 import lombok.AllArgsConstructor;
@@ -29,7 +29,7 @@ public class RegistrationFeeAspect {
     }
 
     @Before(value = "UserServiceImpl_signUpMethod()")
-    public void payRegistrationFeeBeforeUserSignup(JoinPoint joinPoint) throws SignUpWithdrawException {
+    public void payRegistrationFeeBeforeUserSignup(JoinPoint joinPoint) throws CoreInvocationException {
         Object[] args = joinPoint.getArgs();
         UserSignUpDto userSignUpDto = (UserSignUpDto) args[0];
         SignupRequest signupRequest = (SignupRequest) args[1];
@@ -37,12 +37,12 @@ public class RegistrationFeeAspect {
         try {
             modernRestClient.callWithdraw(userSignUpDto.getAccountNumber(),
                     Utils.getRequesterDto(signupRequest.getRequesterEntity()));
-        } catch (SignUpWithdrawException signUpWithdrawException) {
-            if (signUpWithdrawException.getErrorCode().equals(ErrorCode.CORE_IS_UNREACHABLE)) {
+        } catch (CoreInvocationException coreInvocationException) {
+            if (coreInvocationException.getErrorCode().equals(ErrorCode.CORE_IS_UNREACHABLE)) {
                 signupRequest.setRequestStatus(RequestStatus.CORE_IS_UNREACHABLE);
                 signupRequestService.save(signupRequest);
             }
-            throw signUpWithdrawException;
+            throw coreInvocationException;
         }
     }
 }

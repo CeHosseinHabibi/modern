@@ -2,8 +2,7 @@ package com.habibi.modern.client;
 
 import com.habibi.modern.dto.*;
 import com.habibi.modern.enums.ErrorCode;
-import com.habibi.modern.exceptions.RollbackWithdrawException;
-import com.habibi.modern.exceptions.SignUpWithdrawException;
+import com.habibi.modern.exceptions.CoreInvocationException;
 import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,23 +17,25 @@ public class OpenFeignClient implements ModernRestClient {
     @Value("${core.registration.fee}")
     private Long registrationFee;
 
-    public WithdrawResponseDto callWithdraw(Long accountNumber, RequesterDto requesterDto) throws SignUpWithdrawException {
+    public WithdrawResponseDto callWithdraw(Long accountNumber, RequesterDto requesterDto)
+            throws CoreInvocationException {
         try {
             return openFeignCoreClient.callWithdraw(new WithdrawDto(accountNumber, registrationFee, requesterDto));
         } catch (RetryableException exception) {
-            throw new SignUpWithdrawException(ErrorCode.CORE_IS_UNREACHABLE, "A connection problem with core system");
-        } catch (SignUpWithdrawException signUpWithdrawException) {
-            throw signUpWithdrawException;
+            throw new CoreInvocationException(ErrorCode.CORE_IS_UNREACHABLE);
+        } catch (CoreInvocationException coreInvocationException) {
+            throw coreInvocationException;
         }
     }
 
-    public RollBackWithdrawResponseDto callRollBack(RollbackWithdrawDto rollbackWithdrawDto) throws RollbackWithdrawException {
+    public RollBackWithdrawResponseDto callRollBack(RollbackWithdrawDto rollbackWithdrawDto)
+            throws CoreInvocationException {
         try {
             return openFeignCoreClient.callRollBack(rollbackWithdrawDto);
         } catch (RetryableException exception) {
-            throw new RollbackWithdrawException(ErrorCode.CORE_IS_UNREACHABLE, "A connection problem with core system");
-        } catch (RollbackWithdrawException rollbackWithdrawException) {
-            throw rollbackWithdrawException;
+            throw new CoreInvocationException(ErrorCode.CORE_IS_UNREACHABLE);
+        } catch (CoreInvocationException coreInvocationException) {
+            throw coreInvocationException;
         }
     }
 }

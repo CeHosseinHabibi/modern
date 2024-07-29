@@ -8,7 +8,7 @@ import com.habibi.modern.entity.RequesterEntity;
 import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.enums.ErrorCode;
 import com.habibi.modern.enums.RequestStatus;
-import com.habibi.modern.exceptions.RollbackWithdrawException;
+import com.habibi.modern.exceptions.CoreInvocationException;
 import com.habibi.modern.repository.SignupRequestRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -48,11 +48,11 @@ public class ConflictResolverScheduler {
                 potentialConflict.setLastRollbackTryDate(LocalDateTime.now());
                 modernRestClient.callRollBack(rollbackDto);
                 potentialConflict.setRequestStatus(RequestStatus.RESOLVED_CONFLICT_BY_ROLLBACKING_ITS_WITHDRAW_TRANSACTION);
-            } catch (RollbackWithdrawException rollbackWithdrawException) {
-                potentialConflict.setLastRollbackTryErrorCode(rollbackWithdrawException.getErrorCode());
-                potentialConflict.setLastRollbackTryDescription(rollbackWithdrawException.getMessage());
-                if (!rollbackWithdrawException.getErrorCode().equals(ErrorCode.CORE_IS_UNREACHABLE) &&
-                        !rollbackWithdrawException.getErrorCode().equals(ErrorCode.CORE_THROWS_INTERNAL_SERVER_ERROR)) {
+            } catch (CoreInvocationException coreInvocationException) {
+                potentialConflict.setLastRollbackTryErrorCode(coreInvocationException.getErrorCode());
+                potentialConflict.setLastRollbackTryDescription(coreInvocationException.getMessage());
+                if (!coreInvocationException.getErrorCode().equals(ErrorCode.CORE_IS_UNREACHABLE) &&
+                        !coreInvocationException.getErrorCode().equals(ErrorCode.CORE_THROWS_INTERNAL_SERVER_ERROR)) {
                     potentialConflict.setRequestStatus(RequestStatus.RESOLVED_CONFLICT_CONTAINS_TRANSACTION_HAS_BAD_REQUEST_ERROR);
                 }
             } finally {

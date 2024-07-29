@@ -8,7 +8,8 @@ import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.entity.UserEntity;
 import com.habibi.modern.enums.ContractType;
 import com.habibi.modern.enums.UserRole;
-import com.habibi.modern.exceptions.SignUpException;
+import com.habibi.modern.exceptions.BadRequestException;
+import com.habibi.modern.exceptions.CoreInvocationException;
 import com.habibi.modern.service.ConflictResolverService;
 import com.habibi.modern.service.UserService;
 import com.habibi.modern.util.Utils;
@@ -32,7 +33,7 @@ public class UserController {
 
     @PostMapping()
     public ResponseEntity<UserSignUpResponseDto> signUp(@Valid @RequestBody UserSignUpDto userSignUpDto)
-            throws SignUpException {
+            throws BadRequestException, CoreInvocationException {
         SignupRequest signupRequest = conflictResolverService.saveSignUpRequest(userSignUpDto);
         UserEntity userEntity = userService.signUp(userSignUpDto, signupRequest);
         return ResponseEntity.ok(UserSignUpResponseDto.builder().username(userEntity.getUsername())

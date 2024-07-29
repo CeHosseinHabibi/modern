@@ -10,6 +10,4 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RollBackWithdrawResponseDto {
     private TransactionDto transactionDto;
-    private ErrorCode errorCode;
-    private String description;
 }

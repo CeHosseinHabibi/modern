@@ -8,7 +8,7 @@ import com.habibi.modern.entity.UserEntity;
 import com.habibi.modern.enums.ContractType;
 import com.habibi.modern.enums.RequestStatus;
 import com.habibi.modern.enums.UserRole;
-import com.habibi.modern.exceptions.SignUpException;
+import com.habibi.modern.exceptions.BadRequestException;
 import com.habibi.modern.repository.UserRepository;
 import com.habibi.modern.specification.UserSpecifications;
 import lombok.AllArgsConstructor;
@@ -28,8 +28,8 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
-    @Transactional(rollbackFor = SignUpException.class)
-    public UserEntity signUp(UserSignUpDto userSignUpDto, SignupRequest signupRequest) throws SignUpException {
+    @Transactional(rollbackFor = BadRequestException.class)
+    public UserEntity signUp(UserSignUpDto userSignUpDto, SignupRequest signupRequest) throws BadRequestException {
         signupRequest.setRequestStatus(RequestStatus.SIGNUP_DONE);
         validate(userSignUpDto);
         UserEntity userEntity = createUser(userSignUpDto);
@@ -51,11 +51,11 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll(userSpecification, pageRequest);
     }
 
-    private UserEntity saveUser(UserEntity userEntity) throws SignUpException {
+    private UserEntity saveUser(UserEntity userEntity) throws BadRequestException {
         try {
             return userRepository.save(userEntity);
         } catch (DataIntegrityViolationException exception) {
-            throw new SignUpException(exception.getMessage());
+            throw new BadRequestException(exception.getMessage());
         }
     }
 
@@ -89,12 +89,12 @@ public class UserServiceImpl implements UserService {
         return new BankUser();
     }
 
-    private void validate(UserSignUpDto userSignUpDto) throws SignUpException {
+    private void validate(UserSignUpDto userSignUpDto) throws BadRequestException {
         if (userRepository.findUserEntityByNationalCode(userSignUpDto.getNationalCode()).isPresent())
-            throw new SignUpException("User with the national code has already been registered.");
+            throw new BadRequestException("User with the national code has already been registered.");
 
         if (userRepository.findUserEntityByUsername(userSignUpDto.getUsername()).isPresent())
-            throw new SignUpException("Username is duplicated.");
+            throw new BadRequestException("Username is duplicated.");
     }
 
 }

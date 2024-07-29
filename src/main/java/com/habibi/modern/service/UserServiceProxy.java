@@ -8,8 +8,8 @@ import com.habibi.modern.enums.ContractType;
 import com.habibi.modern.enums.ErrorCode;
 import com.habibi.modern.enums.RequestStatus;
 import com.habibi.modern.enums.UserRole;
-import com.habibi.modern.exceptions.SignUpException;
-import com.habibi.modern.exceptions.SignUpWithdrawException;
+import com.habibi.modern.exceptions.BadRequestException;
+import com.habibi.modern.exceptions.CoreInvocationException;
 import com.habibi.modern.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,17 +28,18 @@ public class UserServiceProxy implements UserService {
     private final SignupRequestService signupRequestService;
     private final UserServiceImpl userServiceImpl;
 
-    public UserEntity signUp(UserSignUpDto userSignUpDto, SignupRequest signupRequest) throws SignUpException {
+    public UserEntity signUp(UserSignUpDto userSignUpDto, SignupRequest signupRequest) throws BadRequestException,
+            CoreInvocationException {
         try {
             modernRestClient.callWithdraw(userSignUpDto.getAccountNumber(),
                     Utils.getRequesterDto(signupRequest.getRequesterEntity()));
             return userServiceImpl.signUp(userSignUpDto, signupRequest);
-        } catch (SignUpWithdrawException signUpWithdrawException) {
-            if (signUpWithdrawException.getErrorCode().equals(ErrorCode.CORE_IS_UNREACHABLE)) {
+        } catch (CoreInvocationException coreInvocationException) {
+            if (coreInvocationException.getErrorCode().equals(ErrorCode.CORE_IS_UNREACHABLE)) {
                 signupRequest.setRequestStatus(RequestStatus.CORE_IS_UNREACHABLE);
                 signupRequestService.save(signupRequest);
             }
-            throw signUpWithdrawException;
+            throw coreInvocationException;
         }
     }
 
