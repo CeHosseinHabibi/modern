@@ -1,13 +1,13 @@
 package com.habibi.modern.aop;
 
 import com.habibi.modern.client.ModernRestClient;
+import com.habibi.modern.convertor.RequesterConvertor;
 import com.habibi.modern.dto.UserSignUpDto;
 import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.enums.ErrorCode;
 import com.habibi.modern.enums.RequestStatus;
 import com.habibi.modern.exceptions.CoreInvocationException;
 import com.habibi.modern.service.SignupRequestService;
-import com.habibi.modern.util.Utils;
 import lombok.AllArgsConstructor;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -36,7 +36,7 @@ public class RegistrationFeeAspect {
 
         try {
             modernRestClient.callWithdraw(userSignUpDto.getAccountNumber(),
-                    Utils.getRequesterDto(signupRequest.getRequesterEntity()));
+                    RequesterConvertor.getRequesterDto(signupRequest.getRequesterEntity()));
         } catch (CoreInvocationException coreInvocationException) {
             if (coreInvocationException.getErrorCode().equals(ErrorCode.CORE_IS_UNREACHABLE)) {
                 signupRequest.setRequestStatus(RequestStatus.CORE_IS_UNREACHABLE);

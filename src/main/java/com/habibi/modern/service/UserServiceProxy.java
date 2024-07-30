@@ -1,6 +1,7 @@
 package com.habibi.modern.service;
 
 import com.habibi.modern.client.ModernRestClient;
+import com.habibi.modern.convertor.RequesterConvertor;
 import com.habibi.modern.dto.UserSignUpDto;
 import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.entity.UserEntity;
@@ -10,7 +11,6 @@ import com.habibi.modern.enums.RequestStatus;
 import com.habibi.modern.enums.UserRole;
 import com.habibi.modern.exceptions.BadRequestException;
 import com.habibi.modern.exceptions.CoreInvocationException;
-import com.habibi.modern.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
@@ -32,7 +32,7 @@ public class UserServiceProxy implements UserService {
             CoreInvocationException {
         try {
             modernRestClient.callWithdraw(userSignUpDto.getAccountNumber(),
-                    Utils.getRequesterDto(signupRequest.getRequesterEntity()));
+                    RequesterConvertor.getRequesterDto(signupRequest.getRequesterEntity()));
             return userServiceImpl.signUp(userSignUpDto, signupRequest);
         } catch (CoreInvocationException coreInvocationException) {
             if (coreInvocationException.getErrorCode().equals(ErrorCode.CORE_IS_UNREACHABLE)) {

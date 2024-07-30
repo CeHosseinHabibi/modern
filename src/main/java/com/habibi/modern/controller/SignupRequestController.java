@@ -1,10 +1,11 @@
 package com.habibi.modern.controller;
 
+import com.habibi.modern.convertor.GenericConvertor;
+import com.habibi.modern.convertor.SignupRequestConvertor;
 import com.habibi.modern.dto.PaginatedResponse;
 import com.habibi.modern.dto.SignupRequestDto;
 import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.service.SignupRequestService;
-import com.habibi.modern.util.Utils;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,7 +30,8 @@ public class SignupRequestController {
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy) {
         Page<SignupRequest> conflictsPage = signupRequestService.getConflicts(createdFrom, createdTo, page, size, sortBy);
-        PaginatedResponse<SignupRequestDto> response = Utils.toPaginatedDtos(conflictsPage, Utils::toSignupRequestDto);
+        PaginatedResponse<SignupRequestDto> response = GenericConvertor.toPaginatedDtos(conflictsPage,
+                SignupRequestConvertor::toSignupRequestDto);
         return ResponseEntity.ok(response);
     }
 }

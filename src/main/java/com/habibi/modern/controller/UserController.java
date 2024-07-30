@@ -1,5 +1,7 @@
 package com.habibi.modern.controller;
 
+import com.habibi.modern.convertor.GenericConvertor;
+import com.habibi.modern.convertor.UserConvertor;
 import com.habibi.modern.dto.PaginatedResponse;
 import com.habibi.modern.dto.UserDto;
 import com.habibi.modern.dto.UserSignUpDto;
@@ -12,7 +14,6 @@ import com.habibi.modern.exceptions.BadRequestException;
 import com.habibi.modern.exceptions.CoreInvocationException;
 import com.habibi.modern.service.ConflictResolverService;
 import com.habibi.modern.service.UserService;
-import com.habibi.modern.util.Utils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -50,7 +51,7 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") String sortBy) {
         Page<UserEntity> usersPage = userService.search(username, firstName, lastName, createdFrom, createdTo,
                 nationalCode, organizationName, contractType, userRole, cif, page, size, sortBy);
-        PaginatedResponse<UserDto> response = Utils.toPaginatedDtos(usersPage, Utils::toUserDto);
+        PaginatedResponse<UserDto> response = GenericConvertor.toPaginatedDtos(usersPage, UserConvertor::toUserDto);
         return ResponseEntity.ok(response);
     }
 }
