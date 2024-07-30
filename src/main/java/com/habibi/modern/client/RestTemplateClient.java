@@ -12,8 +12,6 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import static com.habibi.modern.util.Utils.*;
-
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "rest.service", havingValue = "rest-template")
@@ -22,11 +20,17 @@ public class RestTemplateClient implements ModernRestClient {
     private final RestTemplate restTemplate;
     @Value("${core.registration.fee}")
     private Long registrationFee;
+    @Value("${microservice.core.url}")
+    private String microserviceCoreURL;
+    @Value("${microservice.core.withdraw.url}")
+    private String microserviceCoreWithdrawURL;
+    @Value("${microservice.core.rollback.withdraw.url}")
+    private String microserviceCoreRollbackWithdrawURL;
 
     public WithdrawResponseDto callWithdraw(Long accountNumber, RequesterDto requesterDto)
             throws CoreInvocationException {
         try {
-            return restTemplate.postForEntity(CORE_SERVICE_URL + SLASH + ACCOUNTS + SLASH + WITHDRAW,
+            return restTemplate.postForEntity(microserviceCoreURL + microserviceCoreWithdrawURL,
                     new WithdrawDto(accountNumber, registrationFee, requesterDto), WithdrawResponseDto.class).getBody();
         } catch (ResourceAccessException resourceAccessException) {
             throw new CoreInvocationException(ErrorCode.CORE_IS_UNREACHABLE);
@@ -40,8 +44,8 @@ public class RestTemplateClient implements ModernRestClient {
     public RollBackWithdrawResponseDto callRollBack(RollbackWithdrawDto rollbackWithdrawDto)
             throws CoreInvocationException {
         try {
-            return restTemplate.postForEntity(CORE_SERVICE_URL + SLASH + ACCOUNTS + SLASH + ROLLBACK_WITHDRAW,
-                    rollbackWithdrawDto, RollBackWithdrawResponseDto.class).getBody();
+            return restTemplate.postForEntity(microserviceCoreURL + microserviceCoreRollbackWithdrawURL, rollbackWithdrawDto,
+                    RollBackWithdrawResponseDto.class).getBody();
         } catch (ResourceAccessException resourceAccessException) {
             throw new CoreInvocationException(ErrorCode.CORE_IS_UNREACHABLE);
         } catch (HttpClientErrorException httpClientErrorException) {

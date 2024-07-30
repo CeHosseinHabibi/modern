@@ -9,13 +9,11 @@ import com.habibi.modern.exceptions.CoreInvocationException;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import static com.habibi.modern.util.Utils.*;
-
-@FeignClient(name = "CoreClient", url = CORE_SERVICE_URL, configuration = OpenFeignConfig.class)
+@FeignClient(name = "CoreClient", url = "${microservice.core.url}", configuration = OpenFeignConfig.class)
 public interface OpenFeignCoreClient {
-    @PostMapping(SLASH + ACCOUNTS + SLASH + WITHDRAW)
+    @PostMapping("${microservice.core.withdraw.url}")
     WithdrawResponseDto callWithdraw(WithdrawDto withdrawDto) throws CoreInvocationException;
 
-    @PostMapping(SLASH + ACCOUNTS + SLASH + ROLLBACK_WITHDRAW)
+    @PostMapping("${microservice.core.rollback.withdraw.url}")
     RollBackWithdrawResponseDto callRollBack(RollbackWithdrawDto rollbackWithdrawDto) throws CoreInvocationException;
 }
