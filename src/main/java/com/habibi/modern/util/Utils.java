@@ -1,13 +1,12 @@
 package com.habibi.modern.util;
 
-import com.habibi.modern.dto.BankUserDto;
-import com.habibi.modern.dto.RequesterDto;
-import com.habibi.modern.dto.ThirdPartyUserDto;
-import com.habibi.modern.dto.UserDto;
-import com.habibi.modern.entity.BankUser;
-import com.habibi.modern.entity.RequesterEntity;
-import com.habibi.modern.entity.ThirdPartyUser;
-import com.habibi.modern.entity.UserEntity;
+import com.habibi.modern.dto.*;
+import com.habibi.modern.entity.*;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Utils {
     public static final String CORE_SERVICE_URL = "http://localhost:8081";
@@ -46,5 +45,21 @@ public class Utils {
         userDto.setCreatedAt(userEntity.getCreatedAt());
         userDto.setNationalCode(userEntity.getNationalCode());
         return userDto;
+    }
+
+    public static SignupRequestDto toSignupRequestDto(SignupRequest signupRequest) {
+        return signupRequest == null ? null : new SignupRequestDto(signupRequest.getId(),
+                signupRequest.getRequestStatus(), signupRequest.getLastRollbackTryErrorCode(),
+                signupRequest.getLastRollbackTryDescription(), signupRequest.getLastRollbackTryDate(),
+                getRequesterDto(signupRequest.getRequesterEntity()));
+    }
+
+    public static <ReturnDtoType, SourceType> PaginatedResponse toPaginatedDtos(
+            Page<SourceType> entitiesPage, Function<SourceType, ReturnDtoType> entityToDtoMapperFunction) {
+        List dtos = entitiesPage.stream().map(entityToDtoMapperFunction).collect(Collectors.toList());
+        PaginatedResponse response = new PaginatedResponse<>(dtos, entitiesPage.getNumber(), entitiesPage.getSize(),
+                entitiesPage.hasNext(), entitiesPage.hasPrevious(), entitiesPage.getTotalElements(),
+                entitiesPage.getTotalPages());
+        return response;
     }
 }

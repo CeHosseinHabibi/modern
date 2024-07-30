@@ -13,6 +13,8 @@ public class PaginatedResponse<T> {
     private List<T> content;
     private int page;
     private int size;
+    private boolean hasNext;
+    private boolean hasPrevious;
     private long totalElements;
     private int totalPages;
 }

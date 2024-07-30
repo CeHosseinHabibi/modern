@@ -21,8 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -52,10 +50,7 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") String sortBy) {
         Page<UserEntity> usersPage = userService.search(username, firstName, lastName, createdFrom, createdTo,
                 nationalCode, organizationName, contractType, userRole, cif, page, size, sortBy);
-        List<UserDto> userDtos = usersPage.stream().map(a -> Utils.toUserDto(a)).collect(Collectors.toList());
-        PaginatedResponse<UserDto> response = new PaginatedResponse<>(userDtos, usersPage.getNumber(),
-                usersPage.getSize(), usersPage.getTotalElements(), usersPage.getTotalPages()
-        );
+        PaginatedResponse<UserDto> response = Utils.toPaginatedDtos(usersPage, Utils::toUserDto);
         return ResponseEntity.ok(response);
     }
 }
