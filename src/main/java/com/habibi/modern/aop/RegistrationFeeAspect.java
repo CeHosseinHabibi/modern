@@ -7,6 +7,8 @@ import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.enums.ErrorCode;
 import com.habibi.modern.enums.RequestStatus;
 import com.habibi.modern.exceptions.CoreInvocationException;
+import com.habibi.modern.exceptions.corecorresponding.ModernInsufficientFundsException;
+import com.habibi.modern.exceptions.SignupInsufficientFundsException;
 import com.habibi.modern.service.SignupRequestService;
 import lombok.AllArgsConstructor;
 import org.aspectj.lang.JoinPoint;
@@ -29,7 +31,8 @@ public class RegistrationFeeAspect {
     }
 
     @Before(value = "UserServiceImpl_signUpMethod()")
-    public void payRegistrationFeeBeforeUserSignup(JoinPoint joinPoint) throws CoreInvocationException {
+    public void payRegistrationFeeBeforeUserSignup(JoinPoint joinPoint) throws CoreInvocationException,
+            SignupInsufficientFundsException {
         Object[] args = joinPoint.getArgs();
         UserSignUpDto userSignUpDto = (UserSignUpDto) args[0];
         SignupRequest signupRequest = (SignupRequest) args[1];
@@ -43,6 +46,8 @@ public class RegistrationFeeAspect {
                 signupRequestService.save(signupRequest);
             }
             throw coreInvocationException;
+        } catch (ModernInsufficientFundsException modernInsufficientFundsException) {
+            throw new SignupInsufficientFundsException(modernInsufficientFundsException.getErrorDto());
         }
     }
 }

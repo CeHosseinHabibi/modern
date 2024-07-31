@@ -6,9 +6,10 @@ import com.habibi.modern.dto.RequesterDto;
 import com.habibi.modern.dto.RollbackWithdrawDto;
 import com.habibi.modern.entity.RequesterEntity;
 import com.habibi.modern.entity.SignupRequest;
-import com.habibi.modern.enums.ErrorCode;
 import com.habibi.modern.enums.RequestStatus;
 import com.habibi.modern.exceptions.CoreInvocationException;
+import com.habibi.modern.exceptions.corecorresponding.ModernRollbackingTheRollbackedWithdrawException;
+import com.habibi.modern.exceptions.corecorresponding.ModernWithdrawOfRollbackNotFoundException;
 import com.habibi.modern.repository.SignupRequestRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -51,10 +52,11 @@ public class ConflictResolverScheduler {
             } catch (CoreInvocationException coreInvocationException) {
                 potentialConflict.setLastRollbackTryErrorCode(coreInvocationException.getErrorCode());
                 potentialConflict.setLastRollbackTryDescription(coreInvocationException.getMessage());
-                if (!coreInvocationException.getErrorCode().equals(ErrorCode.CORE_IS_UNREACHABLE) &&
-                        !coreInvocationException.getErrorCode().equals(ErrorCode.CORE_THROWS_INTERNAL_SERVER_ERROR)) {
-                    potentialConflict.setRequestStatus(RequestStatus.RESOLVED_CONFLICT_CONTAINS_TRANSACTION_HAS_BAD_REQUEST_ERROR);
-                }
+            } catch (ModernWithdrawOfRollbackNotFoundException |
+                     ModernRollbackingTheRollbackedWithdrawException modernException) {
+                potentialConflict.setLastRollbackTryErrorCode(modernException.getErrorCode());
+                potentialConflict.setLastRollbackTryDescription(modernException.getMessage());
+                potentialConflict.setRequestStatus(RequestStatus.RESOLVED_CONFLICT_CONTAINS_TRANSACTION_HAS_BAD_REQUEST_ERROR);
             } finally {
                 signupRequestRepository.save(potentialConflict);
             }

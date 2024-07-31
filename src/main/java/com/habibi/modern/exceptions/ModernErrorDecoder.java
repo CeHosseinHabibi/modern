@@ -1,6 +1,7 @@
 package com.habibi.modern.exceptions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.habibi.modern.dto.ErrorDto;
 import com.habibi.modern.enums.ErrorCode;
 import feign.Response;
 import feign.Util;
@@ -19,6 +20,11 @@ public class ModernErrorDecoder implements ErrorDecoder {
         }
 
         String body = Util.toString(response.body().asReader());
-        return objectMapper.readValue(body, CoreInvocationException.class);
+        ErrorDto errorDto = objectMapper.readValue(body, ErrorDto.class);
+
+        String correspondingModernException = "com.habibi.modern.exceptions.corecorresponding.Modern" + errorDto.getErrorType();
+        Exception exception = ((Exception) Class.forName(correspondingModernException)
+                .getDeclaredConstructor(ErrorDto.class).newInstance(errorDto));
+        return exception;
     }
 }

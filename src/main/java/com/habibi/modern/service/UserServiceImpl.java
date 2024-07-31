@@ -6,6 +6,7 @@ import com.habibi.modern.entity.SignupRequest;
 import com.habibi.modern.entity.ThirdPartyUser;
 import com.habibi.modern.entity.UserEntity;
 import com.habibi.modern.enums.ContractType;
+import com.habibi.modern.enums.ErrorCode;
 import com.habibi.modern.enums.RequestStatus;
 import com.habibi.modern.enums.UserRole;
 import com.habibi.modern.exceptions.BadRequestException;
@@ -91,10 +92,10 @@ public class UserServiceImpl implements UserService {
 
     private void validate(UserSignUpDto userSignUpDto) throws BadRequestException {
         if (userRepository.findUserEntityByNationalCode(userSignUpDto.getNationalCode()).isPresent())
-            throw new BadRequestException("User with the national code has already been registered.");
+            throw new BadRequestException(ErrorCode.DUPLICATION_NATIONAL_CODE_REGISTRATION);
 
         if (userRepository.findUserEntityByUsername(userSignUpDto.getUsername()).isPresent())
-            throw new BadRequestException("Username is duplicated.");
+            throw new BadRequestException(ErrorCode.DUPLICATION_USERNAME_REGISTRATION);
     }
 
 }

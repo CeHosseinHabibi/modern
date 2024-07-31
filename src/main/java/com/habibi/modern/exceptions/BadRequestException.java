@@ -5,7 +5,11 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class BadRequestException extends SystemException {
-    public BadRequestException(String... additionalDescription) {
+    public BadRequestException(ErrorCode subErrorCode) {
+        this.errorCode = ErrorCode.BAD_REQUEST_EXCEPTION;
+        this.subErrorCode = subErrorCode;
+    }
+    public BadRequestException(String additionalDescription) {
         this.errorCode = ErrorCode.BAD_REQUEST_EXCEPTION;
         this.additionalDescription = additionalDescription;
     }

@@ -8,10 +8,4 @@ public class CoreInvocationException extends InvocationException {
     public CoreInvocationException(ErrorCode errorCode) {
         this.errorCode = errorCode;
     }
-
-    public CoreInvocationException(ErrorCode errorCode, String message, String... additionalDescription) {
-        this.errorCode = errorCode;
-        this.message = message;
-        this.additionalDescription = additionalDescription;
-    }
 }

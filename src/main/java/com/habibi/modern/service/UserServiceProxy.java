@@ -11,6 +11,8 @@ import com.habibi.modern.enums.RequestStatus;
 import com.habibi.modern.enums.UserRole;
 import com.habibi.modern.exceptions.BadRequestException;
 import com.habibi.modern.exceptions.CoreInvocationException;
+import com.habibi.modern.exceptions.corecorresponding.ModernInsufficientFundsException;
+import com.habibi.modern.exceptions.SignupInsufficientFundsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
@@ -29,7 +31,7 @@ public class UserServiceProxy implements UserService {
     private final UserServiceImpl userServiceImpl;
 
     public UserEntity signUp(UserSignUpDto userSignUpDto, SignupRequest signupRequest) throws BadRequestException,
-            CoreInvocationException {
+            CoreInvocationException, SignupInsufficientFundsException {
         try {
             modernRestClient.callWithdraw(userSignUpDto.getAccountNumber(),
                     RequesterConvertor.getRequesterDto(signupRequest.getRequesterEntity()));
@@ -40,6 +42,8 @@ public class UserServiceProxy implements UserService {
                 signupRequestService.save(signupRequest);
             }
             throw coreInvocationException;
+        } catch (ModernInsufficientFundsException modernInsufficientFundsException) {
+            throw new SignupInsufficientFundsException(modernInsufficientFundsException.getErrorDto());
         }
     }
 

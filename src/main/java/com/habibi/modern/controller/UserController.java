@@ -12,6 +12,7 @@ import com.habibi.modern.enums.ContractType;
 import com.habibi.modern.enums.UserRole;
 import com.habibi.modern.exceptions.BadRequestException;
 import com.habibi.modern.exceptions.CoreInvocationException;
+import com.habibi.modern.exceptions.SignupInsufficientFundsException;
 import com.habibi.modern.service.ConflictResolverService;
 import com.habibi.modern.service.UserService;
 import jakarta.validation.Valid;
@@ -32,7 +33,7 @@ public class UserController {
 
     @PostMapping()
     public ResponseEntity<UserSignUpResponseDto> signUp(@Valid @RequestBody UserSignUpDto userSignUpDto)
-            throws BadRequestException, CoreInvocationException {
+            throws BadRequestException, CoreInvocationException, SignupInsufficientFundsException {
         SignupRequest signupRequest = conflictResolverService.saveSignUpRequest(userSignUpDto);
         UserEntity userEntity = userService.signUp(userSignUpDto, signupRequest);
         return ResponseEntity.ok(UserSignUpResponseDto.builder().username(userEntity.getUsername())
